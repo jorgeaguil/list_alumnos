@@ -8,8 +8,6 @@ import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.listalumnos.databinding.ActivityMainBinding
-import com.example.listalumnos.AlumnoManager
-
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -22,27 +20,33 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.recyclerview.layoutManager = LinearLayoutManager(this)
 
+        // Crear y establecer el adaptador para el RecyclerView
         adapter = AlumnoAdapter(this, data)
         binding.recyclerview.adapter = adapter
+        // Configurar el listener para los clics en los elementos del RecyclerView
         adapter.setOnItemClickListener(object: AlumnoAdapter.ClickListener {
             override fun onItemClick(view: View, position: Int) {
-                itemOptionsMenu(position)
+                itemOptionsMenu(position) // Mostrar opciones del ítem
             }
         })
 
+        // Listener para el botón flotante de agregar nuevo estudiante
         binding.faButton.setOnClickListener {
             val intento1 = Intent(this, MainActivityNuevo::class.java)
             startActivity(intento1)
         }
 
+        // Procesar datos recibidos de MainActivityNuevo
         val parExtra = intent.extras
         val msje = parExtra?.getString("mensaje")
         if (msje == "edited") {
+            // Si se editó un estudiante, actualizar el ítem modificado en la lista
             val position = parExtra?.getInt("position", -1)
             if (position != null && position != -1) {
                 adapter.notifyItemChanged(position)
             }
         } else if (msje == "nuevo") {
+            // Si se agregó un nuevo estudiante, agregarlo a la lista y notificar al adaptador
             val nombre = parExtra?.getString("nombre")
             val cuenta = parExtra?.getString("cuenta")
             val correo = parExtra?.getString("correo")
@@ -53,6 +57,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Mostrar menú de opciones para un estudiante en una posición dada
     private fun itemOptionsMenu(position: Int) {
         val viewHolder = binding.recyclerview.findViewHolderForAdapterPosition(position) ?: return
         val popupMenu = PopupMenu(this, viewHolder.itemView.findViewById(R.id.textViewOptions))
@@ -62,12 +67,14 @@ class MainActivity : AppCompatActivity() {
             override fun onMenuItemClick(item: MenuItem?): Boolean {
                 when(item?.itemId) {
                     R.id.borrar -> {
+                        // Borrar el estudiante y notificar al adaptador
                         val tmpAlum = data[position]
                         data.remove(tmpAlum)
                         adapter.notifyDataSetChanged()
                         return true
                     }
                     R.id.editar -> {
+                        // Editar el estudiante, enviar los datos y abrir MainActivityNuevo para edición
                         val alumno = data[position]
                         intento2.putExtra("mensaje", "edit")
                         intento2.putExtra("position", position)
